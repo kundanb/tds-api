@@ -1,0 +1,11 @@
+{
+  "name": "tds-api",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "php spark serve",
+    "prebuild": "composer install --no-dev",
+    "build": "git ls-files --others --cached --exclude-standard --exclude=!vendor | tar -cvzf tds-api.tar.gz -T -",
+    "postbuild": "composer install"
+  }
+}
