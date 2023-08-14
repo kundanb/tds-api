@@ -23,6 +23,14 @@ $routes->set404Override();
 
 $routes->get('/', 'Home::index');
 
+/**
+ * Web Routes
+ */
+
+$routes->group('auth', ['namespace' => 'App\Controllers\Web'], static function ($routes) {
+    $routes->post('register', 'Auth::register');
+});
+
 /*
  * --------------------------------------------------------------------
  * Additional Routing

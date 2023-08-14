@@ -1,15 +1,95 @@
 <?php
 
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+
 /**
- * The goal of this file is to allow developers a location
- * where they can overwrite core procedural functions and
- * replace them with their own. This file is loaded during
- * the bootstrap process and is called during the framework's
- * execution.
- *
- * This can be looked at as a `master helper` file that is
- * loaded early on, and may also contain additional functions
- * that you'd like to use throughout your entire application
- *
- * @see: https://codeigniter.com/user_guide/extending/common.html
+ * --------------------------------------------------------------------
+ * Get image data URI
+ * --------------------------------------------------------------------
  */
+
+function getImageDataURI(string $imageFilename)
+{
+    $imageBase64 = base64_encode(file_get_contents($imageFilename));
+    return 'data: ' . mime_content_type($imageFilename) . ';base64,' . $imageBase64;
+}
+
+/**
+ * --------------------------------------------------------------------
+ * Password Hashing
+ * --------------------------------------------------------------------
+ */
+
+function hashPassword(string $password)
+{
+    return password_hash($password, PASSWORD_BCRYPT);
+}
+
+function verifyPassword(string $password, string $hashedPassword)
+{
+    return password_verify($password, $hashedPassword);
+}
+
+/**
+ * --------------------------------------------------------------------
+ * JWT Authentication
+ * --------------------------------------------------------------------
+ */
+
+function getJWTKey()
+{
+    return getenv('jwt.key');
+}
+
+function createJWTToken(int|string $duration = null)
+{
+    $dateTime = new DateTime;
+
+    $payload = [
+        'iss' => base_url(),
+        'iat' => $dateTime->getTimestamp(),
+    ];
+
+    if ($duration != null) {
+        if (is_string($duration)) {
+            $dateTime->add(DateInterval::createFromDateString($duration));
+        } else {
+            $dateTime->add(new DateInterval($duration));
+        }
+
+        $payload['exp'] = $dateTime->getTimestamp();
+    }
+
+    return JWT::encode($payload, getJWTKey(), 'HS256');
+}
+
+function getJWTData(string $token)
+{
+    return JWT::decode($token, new Key(getJWTKey(), 'HS256'));
+}
+
+function isJWTTokenExpired(string $token)
+{
+    $payload = getJWTData($token);
+    $datetime = new DateTime;
+
+    return $payload->exp <= $datetime->getTimestamp();
+}
+
+/**
+ * --------------------------------------------------------------------
+ * Email
+ * --------------------------------------------------------------------
+ */
+
+function sendMail(string $to, string $subject, string $message)
+{
+    $emailService = \Config\Services::email();
+    $emailService->setFrom(getenv('email.fromEmail'), getenv('email.fromName'));
+    $emailService->setMailType('html');
+    $emailService->setTo($to);
+    $emailService->setSubject($subject);
+    $emailService->setMessage($message);
+    $emailService->send();
+}

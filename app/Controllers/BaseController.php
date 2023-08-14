@@ -10,6 +10,9 @@ use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\API\ResponseTrait;
 use Psr\Log\LoggerInterface;
 
+use App\Models\UsersModel;
+use App\Models\LoginsModel;
+
 /**
  * Class BaseController
  */
@@ -28,11 +31,24 @@ abstract class BaseController extends Controller
     protected $helpers = [];
 
     /**
+     * @var UsersModel
+     */
+    protected $usersModel;
+
+    /**
+     * @var LoginsModel
+     */
+    protected $loginsModel;
+
+    /**
      * @return void
      */
     public function initController(RequestInterface $request, ResponseInterface $response, LoggerInterface $logger)
     {
         parent::initController($request, $response, $logger);
+
+        $this->usersModel = new UsersModel;
+        $this->loginsModel = new LoginsModel;
     }
 
     protected function respondWith($success = 1, $message = null, $data = null, $status = 200)
