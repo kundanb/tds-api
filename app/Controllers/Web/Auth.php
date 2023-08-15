@@ -3,11 +3,20 @@
 namespace App\Controllers\Web;
 
 use App\Controllers\BaseController;
+use App\Utilities\HTTPResponseCodes;
 
 class Auth extends BaseController
 {
     public function register()
     {
+        if (!$this->isDBConnected()) {
+            return $this->respondWith(
+                success: 0,
+                message: 'Something went wrong.',
+                status: HTTPResponseCodes::INTERNAL_SERVER_ERROR
+            );
+        }
+
         // extract request values
         $username = $this->request->getVar('username');
         $email = $this->request->getVar('email');
@@ -28,33 +37,17 @@ class Auth extends BaseController
         if (!empty($validation->getErrors())) {
             return $this->respondWith(
                 success: 0,
-                message: $validation->getErrors()
+                message: $validation->getErrors(),
+                status: HTTPResponseCodes::BAD_REQUEST
             );
         }
-
-        // return view('emails\user_registration', [
-        //     'title' => 'Welcome to TDS Era',
-        //     'logoImage' => getImageDataURI('logo-dark.png'),
-        //     'username' => $username
-        // ]);
-
-        // send notification email to user
-        sendMail(
-            $email,
-            'Welcome to TDS Era',
-
-            view('emails\user_registration', [
-                'title' => 'Welcome to TDS Era',
-                'logoImage' => base_url('images/logo-dark.png'),
-                'username' => $username
-            ])
-        );
 
         // respond with error (if username already taken)
         if ($this->usersModel->where('username', $username)->withDeleted()->countAllResults()) {
             return $this->respondWith(
                 success: 0,
-                message: 'Username already taken.'
+                message: 'Username already taken.',
+                status: HTTPResponseCodes::NOT_ACCEPTABLE
             );
         }
 
@@ -62,7 +55,8 @@ class Auth extends BaseController
         if ($this->usersModel->where('email', $email)->withDeleted()->countAllResults()) {
             return $this->respondWith(
                 success: 0,
-                message: 'Email already registered.'
+                message: 'Email already registered.',
+                status: HTTPResponseCodes::NOT_ACCEPTABLE
             );
         }
 
@@ -80,9 +74,22 @@ class Auth extends BaseController
         if (!$inserted) {
             return $this->respondWith(
                 success: 0,
-                message: 'Couldn\'t register your account.'
+                message: 'Couldn\'t register your account.',
+                status: HTTPResponseCodes::INTERNAL_SERVER_ERROR
             );
         }
+
+        // send notification email to user
+        sendMail(
+            $email,
+            'Welcome to TDS Era',
+
+            view('emails\user_registration', [
+                'title' => 'Welcome to TDS Era',
+                'logoImage' => base_url('images/logo-dark.png'),
+                'username' => $username
+            ])
+        );
 
         // create auth token
         $token = createJWTToken('30 days');

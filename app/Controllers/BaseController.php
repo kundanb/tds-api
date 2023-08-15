@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use CodeIgniter\Controller;
+use CodeIgniter\Database\Exceptions\DatabaseException;
 use CodeIgniter\HTTP\CLIRequest;
 use CodeIgniter\HTTP\IncomingRequest;
 use CodeIgniter\HTTP\RequestInterface;
@@ -49,6 +50,17 @@ abstract class BaseController extends Controller
 
         $this->usersModel = new UsersModel;
         $this->loginsModel = new LoginsModel;
+    }
+
+    protected function isDBConnected()
+    {
+        try {
+            $db = \Config\Database::connect();
+            $db->initialize();
+            return true;
+        } catch (DatabaseException) {
+            return false;
+        }
     }
 
     protected function respondWith($success = 1, $message = null, $data = null, $status = 200)
