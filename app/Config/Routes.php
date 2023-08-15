@@ -29,6 +29,9 @@ $routes->get('/', 'Home::index');
 
 $routes->group('auth', ['namespace' => 'App\Controllers\Web'], static function ($routes) {
     $routes->post('register', 'Auth::register');
+    $routes->post('login', 'Auth::login');
+
+    $routes->get('user', 'Auth::user');
 });
 
 /*

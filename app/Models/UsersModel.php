@@ -19,4 +19,15 @@ class UsersModel extends ContainerModel
         'avatar_url',
         'is_verified'
     ];
+
+    public function removePrivateFields(array &$user, array $publicFields = [], array $fieldsToRemove = [])
+    {
+        if (!in_array('password', $publicFields))
+            unset($user['password']);
+
+        if (!in_array('deleted_at', $publicFields))
+            unset($user['deleted_at']);
+
+        $this->removeFields($user, $fieldsToRemove);
+    }
 }

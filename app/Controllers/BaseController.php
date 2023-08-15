@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Utilities\HTTPResponseCodes;
 use CodeIgniter\Controller;
 use CodeIgniter\Database\Exceptions\DatabaseException;
 use CodeIgniter\HTTP\CLIRequest;
@@ -74,5 +75,14 @@ abstract class BaseController extends Controller
             $finalResponse['data'] = $data;
 
         return $this->respond($finalResponse, $status);
+    }
+
+    protected function respondWithUnknownError()
+    {
+        return $this->respondWith(
+            success: 0,
+            message: 'Something went wrong',
+            status: HTTPResponseCodes::INTERNAL_SERVER_ERROR
+        );
     }
 }
